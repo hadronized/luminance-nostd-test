@@ -9,6 +9,11 @@ const GLX_RGBA: i32 = 4;
 const GLX_DOUBLEBUFFER: i32 = 5;
 const GLX_DEPTH_SIZE: i32 = 12;
 const DOUBLE_BUFF_VISUAL: [i32; 5] = [GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, 0];
+const EXPOSURE_MASK: i32 = 1 << 15;
+const INPUT_OUPUT: u16 = 1;
+const CW_BORDER_PIXEL: u32 = 1 << 3;
+const CW_EVENT_MASK: u32 = 1 << 11;
+const CW_COLORMAP: u32 = 1 << 13;
 
 // query structure for visuals
 #[repr(C)]
@@ -26,18 +31,37 @@ struct XVisualInfo {
 }
 
 type VisualID = u32;
-type Visual = (); // opaque
+
+enum Visual {} // opaque
+
+type Colormap = u32;
+
+#[repr(C)]
+struct XSetWindowAttributes {
+  background_pixmap: Pixmap,
+  background_pixel: u32,
+  border_pixmap: Pixmap,
+  border_pixel: u32,
+  bit_gravity: i16,
+  win_gravity: i16,
+  backing_store: i16,
+  backing_planes: u32,
+  backing_pixel: u32,
+  save_under: Bool,
+  event_mask: i32,
+  do_not_propagate_mask: i32,
+  override_redirect: Bool,
+  colormap: Colormap,
+  cursor: Cursor
+}
+
+type Pixmap = u32;
+type Bool = i16;
+type Cursor = u32;
 
 /*
 
  char const TITLE[] = "Lightning Road To Liquid Radiator";
-  int /* const */ DOUBLE_BUFF_VISUAL[] = {
-      GLX_RGBA
-    , GLX_DEPTH_SIZE, 24
-    , GLX_DOUBLEBUFFER
-    , None
-  };
-//    {'r','g','b','a','_','i','n','t','r','o',0}
 }
 window_c::window_c(unsigned width, unsigned height, bool full) {
   XVisualInfo *pVI;
