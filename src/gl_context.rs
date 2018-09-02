@@ -14,6 +14,9 @@ const INPUT_OUPUT: u16 = 1;
 const CW_BORDER_PIXEL: u32 = 1 << 3;
 const CW_EVENT_MASK: u32 = 1 << 11;
 const CW_COLORMAP: u32 = 1 << 13;
+const KEY_PRESS_MASK: i32 = 1 << 0;
+const KEY_RELEASE_MASK: i32 = 1 << 1;
+const SUBSTRUCTURE_NOTIFY_MASK: i32 = 1 << 19;
 
 // query structure for visuals
 #[repr(C)]
@@ -58,6 +61,64 @@ struct XSetWindowAttributes {
 type Pixmap = u32;
 type Bool = i16;
 type Cursor = u32;
+
+enum Display {}
+
+enum GLcontextRec {}
+type GLXContext = *mut GLcontextRec;
+
+type Window = u32;
+
+// functions
+extern "system" {
+  // Xlib
+  #[link_name = "XOpenDisplay"] fn x_open_display(
+    _: *const i8
+  ) -> *mut Display;
+
+  #[link_name = "XCreateColormap"] fn x_create_colormap(
+    _: *mut Display,
+    _: Window,
+    _: *mut Visual,
+    _: i16
+  ) -> Colormap;
+
+  #[link_name = "XCreateWindow"] fn x_create_window(
+    _: *mut Display,
+    _: Window,
+    _: i16,
+    _: i16,
+    _: u16,
+    _: u16,
+    _: u16,
+    _: i16,
+    _: u16,
+    _: *mut Visual,
+    _: u32,
+    _: *mut XSetWindowAttributes
+  ) -> Window;
+
+  // GLX
+  #[link_name = "glXQueryExtension"] fn glx_query_extension(
+    _: *mut Display,
+    _: *mut i16,
+    _: *mut i16
+  ) -> Bool;
+
+  #[link_name = "glXChooseVisual"] fn glx_choose_visual(
+    _: *mut Display,
+    _: i16,
+    _: *mut i16
+  ) -> XVisualInfo;
+
+  #[link_name = "glXCreateContext"] fn glx_create_context(
+    _: *mut Display,
+    _: *mut XVisualInfo,
+    _: GLXContext,
+    _: Bool
+  ) -> GLXContext;
+}
+
 
 /*
 
