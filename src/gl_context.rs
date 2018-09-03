@@ -138,6 +138,41 @@ extern "system" {
     _: u32
   ) -> Pixmap;
 
+  #[link_name = "XCreatePixmapCursor"] fn x_create_pixmap_cursor(
+    _: *mut Display,
+    _: Pixmap,
+    _: Pixmap,
+    _: *mut XColor,
+    _: *mut XColor,
+    _: u32,
+    _: u32
+  ) -> Cursor;
+
+  #[link_name = "XDefineCursor"] fn x_define_cursor(
+    _: *mut Display,
+    _: Window,
+    _: Cursor
+  ) -> i32;
+
+  #[link_name = "XFreeCursor"] fn x_free_cursor(
+    _: *mut Display,
+    _: Cursor
+  ) -> i32;
+
+  #[link_name = "XFreePixmap"] fn x_free_pixmap(
+    _: *mut Display,
+    _: Pixmap
+  ) -> i32;
+
+  #[link_name = "XDestroyWindow"] fn x_destroy_window(
+    _: *mut Display,
+    _: Window
+  ) -> i32;
+
+  #[link_name = "XCloseDisplay"] fn x_close_display(
+    _: *mut Display
+  ) -> i32;
+
   // GLX
   #[link_name = "glXQueryExtension"] fn glx_query_extension(
     _: *mut Display,
@@ -162,6 +197,11 @@ extern "system" {
     _: *mut Display,
     _: GLXDrawable,
     _: GLXContext
+  );
+
+  #[link_name = "glXSwapBuffers"] fn glx_swap_buffers(
+    _: *mut Display,
+    _: GLXDrawable
   );
 }
 
