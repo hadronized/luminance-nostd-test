@@ -4,6 +4,8 @@
 //! I highly not recommend to dig in too much as it’s very spec / driver code and magic
 //! numbers.
 
+use core::ptr;
+
 // several hints used to specify the bit depth and double buffering
 const GLX_RGBA: i32 = 4;
 const GLX_DOUBLEBUFFER: i32 = 5;
@@ -184,7 +186,7 @@ extern "system" {
     _: *mut Display,
     _: i32,
     _: *mut i32
-  ) -> XVisualInfo;
+  ) -> *mut XVisualInfo;
 
   #[link_name = "glXCreateContext"] fn glx_create_context(
     _: *mut Display,
@@ -205,6 +207,45 @@ extern "system" {
   );
 }
 
+fn open_context(title: &str) -> Option<()> {
+  let c_title = title.as_ptr() as *const i8;
+  let cmap = 0;
+  let winAttr = XSetWindowAttributes {
+    // interesting values
+    colormap: cmap,
+    event_mask: EXPOSURE_MASK | KEY_PRESS_MASK | KEY_RELEASE_MASK | SUBSTRUCTURE_NOTIFY_MASK,
+    // no one gives a shit
+    background_pixmap: 0,
+    background_pixel: 0,
+    border_pixmap: 0,
+    border_pixel: 0,
+    bit_gravity: 0,
+    win_gravity: 0,
+    backing_store: 0,
+    backing_planes: 0,
+    backing_pixel: 0,
+    save_under: 0,
+    do_not_propagate_mask: 0,
+    override_redirect: 0,
+    cursor: 0,
+  };
+  let argv = [c_title, ptr::null()];
+  let pDisp = unsafe { x_open_display(ptr::null_mut()) };
+
+  if pDisp.is_null() {
+    return None;
+  }
+
+  // make sure GLX is supported
+  let glxSupported = unsafe { glx_query_extension(pDisp, ptr::null_mut(), ptr::null_mut()) };
+  if glxSupported == 0 {
+    return None;
+  }
+
+  let pVI = glx_choose_visual(pDisp, 
+
+  Some(())
+}
 
 /*
 
