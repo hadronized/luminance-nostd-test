@@ -62,12 +62,28 @@ type Pixmap = u32;
 type Bool = i16;
 type Cursor = u32;
 
-enum Display {}
+enum Display {} // opaque
 
-enum GLcontextRec {}
+enum GLcontextRec {} // opaque
 type GLXContext = *mut GLcontextRec;
 
 type Window = u32;
+
+enum XSizeHints {} // opaque
+
+type GLXDrawable = u32;
+
+type Drawable = u32;
+
+#[repr(C)]
+struct XColor {
+  pixel: u32,
+  red: u16,
+  green: u16,
+  blue: u16,
+  flags: i8,
+  pad: i8
+}
 
 // functions
 extern "system" {
@@ -80,35 +96,59 @@ extern "system" {
     _: *mut Display,
     _: Window,
     _: *mut Visual,
-    _: i16
+    _: i32
   ) -> Colormap;
 
   #[link_name = "XCreateWindow"] fn x_create_window(
     _: *mut Display,
     _: Window,
-    _: i16,
-    _: i16,
-    _: u16,
-    _: u16,
-    _: u16,
-    _: i16,
-    _: u16,
-    _: *mut Visual,
+    _: i32,
+    _: i32,
     _: u32,
+    _: u32,
+    _: u32,
+    _: i32,
+    _: u32,
+    _: *mut Visual,
+    _: u64,
     _: *mut XSetWindowAttributes
   ) -> Window;
+
+  #[link_name = "XSetStandardProperties"] fn x_set_standard_properties(
+    _: *mut Display,
+    _: Window,
+    _: *const i8,
+    _: *const i8,
+    _: Pixmap,
+    _: *mut *mut i8,
+    _: i32,
+    _: *mut XSizeHints
+  ) -> i32;
+
+  #[link_name = "XMapWindow"] fn x_map_window(
+    _: *mut Display,
+    _: Window
+  ) -> i32;
+
+  #[link_name = "XCreateBitmapFromData"] fn x_create_bitmap_from_data(
+    _: *mut Display,
+    _: Drawable,
+    _: *const i8,
+    _: u32,
+    _: u32
+  ) -> Pixmap;
 
   // GLX
   #[link_name = "glXQueryExtension"] fn glx_query_extension(
     _: *mut Display,
-    _: *mut i16,
-    _: *mut i16
+    _: *mut i32,
+    _: *mut i32
   ) -> Bool;
 
   #[link_name = "glXChooseVisual"] fn glx_choose_visual(
     _: *mut Display,
-    _: i16,
-    _: *mut i16
+    _: i32,
+    _: *mut i32
   ) -> XVisualInfo;
 
   #[link_name = "glXCreateContext"] fn glx_create_context(
@@ -117,6 +157,12 @@ extern "system" {
     _: GLXContext,
     _: Bool
   ) -> GLXContext;
+
+  #[link_name = "glXMakeCurrent"] fn glx_make_current(
+    _: *mut Display,
+    _: GLXDrawable,
+    _: GLXContext
+  );
 }
 
 
