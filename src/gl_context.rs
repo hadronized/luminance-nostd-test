@@ -35,11 +35,13 @@ struct XVisualInfo {
   bits_per_rgb: i16
 }
 
-type VisualID = u32;
+type XID = u32;
+
+type VisualID = XID;
 
 enum Visual {} // opaque
 
-type Colormap = u32;
+type Colormap = XID;
 
 #[repr(C)]
 struct XSetWindowAttributes {
@@ -60,11 +62,92 @@ struct XSetWindowAttributes {
   cursor: Cursor
 }
 
-type Pixmap = u32;
+type Pixmap = XID;
 type Bool = i16;
-type Cursor = u32;
+type Cursor = XID;
 
-enum Display {} // opaque
+enum XExtData {} // opaque
+enum XPrivate {} // opaque
+enum XDisplay {} // opaque
+enum ScreenFormat {} // opaque
+enum XrmHashBucketRec {} // opaque
+
+type XPointer = *mut i8;
+
+struct Display {
+  ext_data: *mut XExtData,
+  private1: *mut XPrivate,
+  fd: i32,
+  private2: i32,
+  proto_major_version: i32,
+  proto_minor_version: i32,
+  vendor: *mut i8,
+  private3: XID,
+  private4: XID,
+  private5: XID,
+  private6: XID,
+  resource_alloc: fn (*mut XDisplay) -> XID,
+  byte_order: i32,
+  bitmap_unit: i32,
+  bitmap_pad: i32,
+  bitmap_bit_order: i32,
+  nformats: i32,
+  pixmap_format: *mut ScreenFormat,
+  private8: i32,
+  release: i32,
+  private9: *mut XPrivate,
+  private10: *mut XPrivate,
+  qlen: i32,
+  last_request_read: u64,
+  request: u64,
+  private11: XPointer,
+  private12: XPointer,
+  private13: XPointer,
+  private14: XPointer,
+  max_request_size: u32,
+  db: *mut XrmHashBucketRec,
+  private15: fn (*mut XDisplay) -> i32,
+  display_name: *mut i8,
+  default_screen: i32,
+  nscreens: i32,
+  screens: *mut Screen,
+  motion_buffer: u64,
+  private16: u64,
+  min_keycode: i32,
+  max_keycode: i32,
+  private17: XPointer,
+  private18: XPointer,
+  private19: i32,
+  defaults: *mut i8
+}
+
+struct Screen {
+  ext_data: *mut XExtData,
+  display: *mut Display,
+  root: Window,
+  width: i32,
+  height: i32,
+  mwidth: i32,
+  mheight: i32,
+  ndepths: i32,
+  depths: *mut Depth,
+  root_depth: i32,
+  root_visual: *mut Visual,
+  default_gc: GC,
+  cmap: Colormap,
+  white_pixel: u64,
+  black_pixel: u64,
+  max_maps: i32,
+  min_maps: i32,
+  backing_store: i32,
+  save_unders: Bool,
+  root_input_mask: i64
+}
+
+enum Depth {} // opaque
+
+enum GC_ {} // opaque
+type GC = *mut GC_;
 
 enum GLcontextRec {} // opaque
 type GLXContext = *mut GLcontextRec;
@@ -185,7 +268,7 @@ extern "system" {
   #[link_name = "glXChooseVisual"] fn glx_choose_visual(
     _: *mut Display,
     _: i32,
-    _: *mut i32
+    _: *const i32
   ) -> *mut XVisualInfo;
 
   #[link_name = "glXCreateContext"] fn glx_create_context(
@@ -242,7 +325,19 @@ fn open_context(title: &str) -> Option<()> {
     return None;
   }
 
-  let pVI = glx_choose_visual(pDisp, 
+  let pVI = glx_choose_visual(pDisp, (*pDisp).default_screen, &DOUBLE_BUFF_VISUAL as _);
+  
+  if pVI.is_null() {
+    return None;
+  }
+
+  let ctx = glx_create_context(pDisp, pVI, ptr::null_mut(), 1);
+
+  if ctx.is_null() {
+    return None;
+  }
+
+  let rootwin = (*(*pDisp).screens.offset((*pVI).screen as isize)).root;
 
   Some(())
 }
