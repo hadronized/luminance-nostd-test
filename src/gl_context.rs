@@ -11,28 +11,28 @@ const GLX_RGBA: i32 = 4;
 const GLX_DOUBLEBUFFER: i32 = 5;
 const GLX_DEPTH_SIZE: i32 = 12;
 const DOUBLE_BUFF_VISUAL: [i32; 5] = [GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, 0];
-const EXPOSURE_MASK: i32 = 1 << 15;
-const INPUT_OUPUT: u16 = 1;
-const CW_BORDER_PIXEL: u32 = 1 << 3;
-const CW_EVENT_MASK: u32 = 1 << 11;
-const CW_COLORMAP: u32 = 1 << 13;
-const KEY_PRESS_MASK: i32 = 1 << 0;
-const KEY_RELEASE_MASK: i32 = 1 << 1;
-const SUBSTRUCTURE_NOTIFY_MASK: i32 = 1 << 19;
+const EXPOSURE_MASK: i64 = 1 << 15;
+const INPUT_OUPUT: u32 = 1;
+const CW_BORDER_PIXEL: u64 = 1 << 3;
+const CW_EVENT_MASK: u64 = 1 << 11;
+const CW_COLORMAP: u64 = 1 << 13;
+const KEY_PRESS_MASK: i64 = 1 << 0;
+const KEY_RELEASE_MASK: i64 = 1 << 1;
+const SUBSTRUCTURE_NOTIFY_MASK: i64 = 1 << 19;
 
 // query structure for visuals
 #[repr(C)]
 struct XVisualInfo {
   visual: *mut Visual,
   visualid: VisualID,
-  screen: i16,
-  depth: i16,
-  c_class: i16,
+  screen: i32,
+  depth: i32,
+  c_class: i32,
   red_mask: u32,
   green_mask: u32,
   blue_mask: u32,
-  colormap_size: i16,
-  bits_per_rgb: i16
+  colormap_size: i32,
+  bits_per_rgb: i32
 }
 
 type XID = u32;
@@ -49,14 +49,14 @@ struct XSetWindowAttributes {
   background_pixel: u32,
   border_pixmap: Pixmap,
   border_pixel: u32,
-  bit_gravity: i16,
-  win_gravity: i16,
-  backing_store: i16,
+  bit_gravity: i32,
+  win_gravity: i32,
+  backing_store: i32,
   backing_planes: u32,
   backing_pixel: u32,
   save_under: Bool,
-  event_mask: i32,
-  do_not_propagate_mask: i32,
+  event_mask: i64,
+  do_not_propagate_mask: i64,
   override_redirect: Bool,
   colormap: Colormap,
   cursor: Cursor
@@ -290,17 +290,17 @@ extern "system" {
   );
 }
 
-fn open_context(title: &str, width: u32, height: u32) -> Option<()> {
+unsafe fn open_context(title: &str, width: u32, height: u32) -> Option<()> {
   let c_title = title.as_ptr() as *const i8;
   let argv = [c_title, ptr::null()];
-  let pDisp = unsafe { x_open_display(ptr::null_mut()) };
+  let pDisp = x_open_display(ptr::null_mut());
 
   if pDisp.is_null() {
     return None;
   }
 
   // make sure GLX is supported
-  let glxSupported = unsafe { glx_query_extension(pDisp, ptr::null_mut(), ptr::null_mut()) };
+  let glxSupported = glx_query_extension(pDisp, ptr::null_mut(), ptr::null_mut());
   if glxSupported == 0 {
     return None;
   }
@@ -318,9 +318,9 @@ fn open_context(title: &str, width: u32, height: u32) -> Option<()> {
   }
 
   let rootwin = (*(*pDisp).screens.offset((*pVI).screen as isize)).root;
-  let cmap = x_create_colormap(pDisp, rootwin, (*pVI.visual), 0);
+  let cmap = x_create_colormap(pDisp, rootwin, (*pVI).visual, 0);
 
-  let winAttr = XSetWindowAttributes {
+  let mut winAttr = XSetWindowAttributes {
     // interesting values
     colormap: cmap,
     event_mask: EXPOSURE_MASK | KEY_PRESS_MASK | KEY_RELEASE_MASK | SUBSTRUCTURE_NOTIFY_MASK,
@@ -340,8 +340,8 @@ fn open_context(title: &str, width: u32, height: u32) -> Option<()> {
     cursor: 0,
   };
 
-  let win = x_create_window(pDisp, rootwin, 0, 0, width, height, 0, (*pVI).depth, InputOutput, pVI->visual, 
-                       CWBorderPixel | CWColormap | CWEventMask, &winAttr );
+  let win = x_create_window(pDisp, rootwin, 0, 0, width, height, 0, (*pVI).depth, INPUT_OUPUT,
+                            (*pVI).visual, CW_BORDER_PIXEL | CW_COLORMAP | CW_EVENT_MASK, &mut winAttr);
 
   Some(())
 }
