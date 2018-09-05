@@ -290,28 +290,8 @@ extern "system" {
   );
 }
 
-fn open_context(title: &str) -> Option<()> {
+fn open_context(title: &str, width: u32, height: u32) -> Option<()> {
   let c_title = title.as_ptr() as *const i8;
-  let cmap = 0;
-  let winAttr = XSetWindowAttributes {
-    // interesting values
-    colormap: cmap,
-    event_mask: EXPOSURE_MASK | KEY_PRESS_MASK | KEY_RELEASE_MASK | SUBSTRUCTURE_NOTIFY_MASK,
-    // no one gives a shit
-    background_pixmap: 0,
-    background_pixel: 0,
-    border_pixmap: 0,
-    border_pixel: 0,
-    bit_gravity: 0,
-    win_gravity: 0,
-    backing_store: 0,
-    backing_planes: 0,
-    backing_pixel: 0,
-    save_under: 0,
-    do_not_propagate_mask: 0,
-    override_redirect: 0,
-    cursor: 0,
-  };
   let argv = [c_title, ptr::null()];
   let pDisp = unsafe { x_open_display(ptr::null_mut()) };
 
@@ -338,6 +318,30 @@ fn open_context(title: &str) -> Option<()> {
   }
 
   let rootwin = (*(*pDisp).screens.offset((*pVI).screen as isize)).root;
+  let cmap = x_create_colormap(pDisp, rootwin, (*pVI.visual), 0);
+
+  let winAttr = XSetWindowAttributes {
+    // interesting values
+    colormap: cmap,
+    event_mask: EXPOSURE_MASK | KEY_PRESS_MASK | KEY_RELEASE_MASK | SUBSTRUCTURE_NOTIFY_MASK,
+    // no one gives a shit
+    background_pixmap: 0,
+    background_pixel: 0,
+    border_pixmap: 0,
+    border_pixel: 0,
+    bit_gravity: 0,
+    win_gravity: 0,
+    backing_store: 0,
+    backing_planes: 0,
+    backing_pixel: 0,
+    save_under: 0,
+    do_not_propagate_mask: 0,
+    override_redirect: 0,
+    cursor: 0,
+  };
+
+  let win = x_create_window(pDisp, rootwin, 0, 0, width, height, 0, (*pVI).depth, InputOutput, pVI->visual, 
+                       CWBorderPixel | CWColormap | CWEventMask, &winAttr );
 
   Some(())
 }
