@@ -8,7 +8,14 @@ name = "luminance-nostd-test"
 version = "0.1.0"
 dependencies = [
  "libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)",
+ "splines 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "splines"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
 "checksum libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)" = "76e3a3ef172f1a0b9a9ff0dd1491ae5e6c948b94479a3021819ba7d860c8645d"
+"checksum splines 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "34db0c7b8e994946febd745062aebe36ebf0b4c2575a14084b594cf669e90029"

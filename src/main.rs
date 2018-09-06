@@ -1,8 +1,12 @@
+#![feature(alloc)]
+#![feature(alloc_error_handler)]
 #![feature(lang_items, core_intrinsics)]
 #![feature(start)]
 #![no_std]
 
+extern crate alloc;
 extern crate libc;
+extern crate splines;
 
 mod gl_context;
 use core::panic::PanicInfo;
@@ -10,7 +14,11 @@ use core::panic::PanicInfo;
 // Entry point for this program.
 #[start]
 fn start(_argc: isize, _argv: *const *const u8) -> isize {
-    0
+  let x = splines::Key::new(0., 0., splines::Interpolation::Linear);
+  let mut keys = alloc::vec::Vec::new();
+  keys.push(x);
+
+  0
 }
 
 // These functions are used by the compiler, but not
@@ -30,5 +38,10 @@ pub extern fn rust_eh_unwind_resume() {
 #[lang = "panic_impl"]
 #[no_mangle]
 pub extern fn rust_begin_panic(_: &PanicInfo) -> ! {
+  loop {}
+}
+
+#[alloc_error_handler]
+fn foo(_: core::alloc::Layout) -> ! {
   loop {}
 }
